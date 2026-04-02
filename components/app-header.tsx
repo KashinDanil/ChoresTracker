@@ -4,6 +4,7 @@ import Link from "next/link";
 import { LogOut, Settings, User } from "lucide-react";
 import { signOut } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -50,7 +51,9 @@ export function AppHeader({ user, household }: Props) {
           )}
         </div>
 
-        <DropdownMenu>
+        <div className="flex items-center gap-1">
+          <ThemeToggle />
+          <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative size-8 rounded-full">
               <Avatar className="size-8">
@@ -88,6 +91,7 @@ export function AppHeader({ user, household }: Props) {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+        </div>
       </div>
     </header>
   );

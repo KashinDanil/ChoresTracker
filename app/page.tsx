@@ -9,6 +9,7 @@ import {
   UserRoundCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const features = [
   {
@@ -65,6 +66,9 @@ const steps = [
 export default function Home() {
   return (
     <div className="flex min-h-screen flex-col">
+      <div className="fixed right-4 top-4 z-50">
+        <ThemeToggle />
+      </div>
       <main className="flex-1">
         {/* Hero */}
         <section className="mx-auto flex max-w-3xl flex-col items-center gap-6 px-6 py-24 text-center sm:py-32">
