@@ -28,6 +28,14 @@ export default async function DashboardPage() {
 
   if (!membership) redirect("/onboarding");
 
+  // Transition overdue pending chores to awaiting_game
+  await supabase
+    .from("chores")
+    .update({ status: "awaiting_game" as const })
+    .eq("household_id", membership.household_id)
+    .eq("status", "pending")
+    .lte("due_date", new Date().toISOString());
+
   // Fetch chores for the household
   const { data: chores } = await supabase
     .from("chores")
@@ -46,18 +54,10 @@ export default async function DashboardPage() {
     display_name: m.profiles?.display_name || "Unknown",
   }));
 
-  const now = new Date();
-
-  // Compute effective status and split into active/done
+  // Split into active/done
   const activeChores = (chores ?? [])
     .filter((c) => c.status !== "done")
-    .map((c) => ({
-      ...c,
-      effectiveStatus:
-        c.status === "pending" && new Date(c.due_date) <= now
-          ? "awaiting_game"
-          : c.status,
-    }));
+    .map((c) => ({ ...c, effectiveStatus: c.status }));
 
   const doneChores = (chores ?? []).filter((c) => c.status === "done");
 
