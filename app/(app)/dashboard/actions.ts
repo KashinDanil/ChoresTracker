@@ -23,8 +23,9 @@ export async function createChore(formData: FormData) {
   const title = formData.get("title") as string;
   const description = (formData.get("description") as string) || null;
   const dueDate = formData.get("dueDate") as string;
+  const recurrenceRaw = formData.get("recurrence") as string;
   const recurrence =
-    (formData.get("recurrence") as string) || null;
+    recurrenceRaw && recurrenceRaw !== "none" ? recurrenceRaw : null;
 
   if (!title?.trim()) return { error: "Title is required." };
   if (!dueDate) return { error: "Due date is required." };
@@ -62,8 +63,9 @@ export async function updateChore(formData: FormData) {
   const title = formData.get("title") as string;
   const description = (formData.get("description") as string) || null;
   const dueDate = formData.get("dueDate") as string;
+  const recurrenceRaw = formData.get("recurrence") as string;
   const recurrence =
-    (formData.get("recurrence") as string) || null;
+    recurrenceRaw && recurrenceRaw !== "none" ? recurrenceRaw : null;
 
   if (!title?.trim()) return { error: "Title is required." };
   if (!dueDate) return { error: "Due date is required." };

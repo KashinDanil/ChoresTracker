@@ -72,12 +72,12 @@ export function CreateChoreDialog() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="recurrence">Repeat</Label>
-            <Select name="recurrence" defaultValue="">
+            <Select name="recurrence" defaultValue="none">
               <SelectTrigger>
                 <SelectValue placeholder="No repeat" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">None</SelectItem>
+                <SelectItem value="none">None</SelectItem>
                 <SelectItem value="daily">Daily</SelectItem>
                 <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="biweekly">Every 2 weeks</SelectItem>
