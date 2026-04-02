@@ -1,16 +1,17 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/database.types";
 import { isSupabaseConfigured, supabaseEnv } from "@/lib/supabase/env";
 
-let browserClient: SupabaseClient | null = null;
+let browserClient: SupabaseClient<Database> | null = null;
 
-export function getSupabaseBrowserClient(): SupabaseClient | null {
+export function getSupabaseBrowserClient(): SupabaseClient<Database> | null {
   if (!isSupabaseConfigured) {
     return null;
   }
 
   if (!browserClient) {
-    browserClient = createBrowserClient(
+    browserClient = createBrowserClient<Database>(
       supabaseEnv.url as string,
       supabaseEnv.anonKey as string,
     );

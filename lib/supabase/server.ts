@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/database.types";
 import { cookies } from "next/headers";
 import { isSupabaseConfigured, supabaseEnv } from "@/lib/supabase/env";
 
@@ -9,14 +10,14 @@ type CookieToSet = {
   options: CookieOptions;
 };
 
-export async function getSupabaseServerClient(): Promise<SupabaseClient | null> {
+export async function getSupabaseServerClient(): Promise<SupabaseClient<Database> | null> {
   if (!isSupabaseConfigured) {
     return null;
   }
 
   const cookieStore = await cookies();
 
-  return createServerClient(
+  return createServerClient<Database>(
     supabaseEnv.url as string,
     supabaseEnv.anonKey as string,
     {
