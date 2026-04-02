@@ -1,7 +1,43 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/database.types";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
+
+type Chore = Database["public"]["Tables"]["chores"]["Row"];
+
+async function createNextOccurrence(
+  supabase: SupabaseClient<Database>,
+  chore: Chore,
+  currentUserId: string,
+) {
+  const dueDate = new Date(chore.due_date);
+  switch (chore.recurrence) {
+    case "daily":
+      dueDate.setDate(dueDate.getDate() + 1);
+      break;
+    case "weekly":
+      dueDate.setDate(dueDate.getDate() + 7);
+      break;
+    case "biweekly":
+      dueDate.setDate(dueDate.getDate() + 14);
+      break;
+    case "monthly":
+      dueDate.setMonth(dueDate.getMonth() + 1);
+      break;
+  }
+
+  // Use current user as created_by so the INSERT RLS policy passes
+  await supabase.from("chores").insert({
+    household_id: chore.household_id,
+    title: chore.title,
+    description: chore.description,
+    due_date: dueDate.toISOString(),
+    created_by: currentUserId,
+    recurrence: chore.recurrence,
+  });
+}
 
 export async function createChore(formData: FormData) {
   const supabase = await getSupabaseServerClient();
@@ -146,7 +182,7 @@ export async function pickGame(choreId: string) {
   return { success: true, gameName: randomGame.name };
 }
 
-export async function assignLoser(choreId: string, userId: string) {
+export async function assignChosenOne(choreId: string, userId: string) {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return { error: "Supabase is not configured." };
 
@@ -203,30 +239,7 @@ export async function markDone(choreId: string) {
 
   // If repeatable, create the next occurrence
   if (chore.recurrence) {
-    const dueDate = new Date(chore.due_date);
-    switch (chore.recurrence) {
-      case "daily":
-        dueDate.setDate(dueDate.getDate() + 1);
-        break;
-      case "weekly":
-        dueDate.setDate(dueDate.getDate() + 7);
-        break;
-      case "biweekly":
-        dueDate.setDate(dueDate.getDate() + 14);
-        break;
-      case "monthly":
-        dueDate.setMonth(dueDate.getMonth() + 1);
-        break;
-    }
-
-    await supabase.from("chores").insert({
-      household_id: chore.household_id,
-      title: chore.title,
-      description: chore.description,
-      due_date: dueDate.toISOString(),
-      created_by: chore.created_by,
-      recurrence: chore.recurrence,
-    });
+    await createNextOccurrence(supabase, chore, user.id);
   }
 
   revalidatePath("/dashboard");
@@ -266,30 +279,7 @@ export async function completeEarly(choreId: string) {
 
   // If repeatable, create the next occurrence
   if (chore.recurrence) {
-    const dueDate = new Date(chore.due_date);
-    switch (chore.recurrence) {
-      case "daily":
-        dueDate.setDate(dueDate.getDate() + 1);
-        break;
-      case "weekly":
-        dueDate.setDate(dueDate.getDate() + 7);
-        break;
-      case "biweekly":
-        dueDate.setDate(dueDate.getDate() + 14);
-        break;
-      case "monthly":
-        dueDate.setMonth(dueDate.getMonth() + 1);
-        break;
-    }
-
-    await supabase.from("chores").insert({
-      household_id: chore.household_id,
-      title: chore.title,
-      description: chore.description,
-      due_date: dueDate.toISOString(),
-      created_by: chore.created_by,
-      recurrence: chore.recurrence,
-    });
+    await createNextOccurrence(supabase, chore, user.id);
   }
 
   revalidatePath("/dashboard");

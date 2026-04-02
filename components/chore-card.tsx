@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   deleteChore,
   pickGame,
-  assignLoser,
+  assignChosenOne,
   markDone,
   completeEarly,
 } from "@/app/(app)/dashboard/actions";
@@ -75,7 +75,7 @@ function formatDate(iso: string) {
 
 export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Props) {
   const [pending, setPending] = useState(false);
-  const [selectedLoser, setSelectedLoser] = useState("");
+  const [selectedMember, setSelectedMember] = useState("");
   // Avoid hydration mismatch by rendering dates only on the client
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -100,10 +100,10 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
     else toast.success(`Game picked: ${result.gameName}`);
   }
 
-  async function handleAssignLoser() {
-    if (!selectedLoser) return;
+  async function handleAssignChosenOne() {
+    if (!selectedMember) return;
     setPending(true);
-    const result = await assignLoser(chore.id, selectedLoser);
+    const result = await assignChosenOne(chore.id, selectedMember);
     setPending(false);
     if (result.error) toast.error(result.error);
   }
@@ -136,7 +136,7 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Badge variant="outline" className={`px-3 py-1.5 text-sm font-semibold ${statusColors[effectiveStatus]}`}>
+          <Badge variant="outline" className={`px-4 py-2 text-sm font-semibold ${statusColors[effectiveStatus]}`}>
             {statusLabels[effectiveStatus]}
           </Badge>
           {isCreator && !isDone && (
@@ -206,12 +206,12 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
             Game: <span className="text-primary">{chore.game_name}</span>
           </p>
           <p className="text-sm text-muted-foreground">
-            Play the game, then select who lost:
+            Play the game, then select the chosen one:
           </p>
           <div className="flex gap-2">
-            <Select value={selectedLoser} onValueChange={setSelectedLoser}>
+            <Select value={selectedMember} onValueChange={setSelectedMember}>
               <SelectTrigger className="w-48">
-                <SelectValue placeholder="Select loser" />
+                <SelectValue placeholder="Select the chosen one" />
               </SelectTrigger>
               <SelectContent>
                 {members.map((m) => (
@@ -223,8 +223,8 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
             </Select>
             <Button
               size="sm"
-              onClick={handleAssignLoser}
-              disabled={pending || !selectedLoser}
+              onClick={handleAssignChosenOne}
+              disabled={pending || !selectedMember}
             >
               {pending ? "Assigning…" : "Assign"}
             </Button>

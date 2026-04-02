@@ -15,7 +15,7 @@ create policy "Games are viewable by authenticated users"
 
 -- Seed initial games
 insert into public.games (name, description) values
-  ('Rock-Paper-Scissors', 'Classic hand game. Best of 3 rounds — loser does the chore.'),
+  ('Rock-Paper-Scissors', 'Classic hand game. Best of 3 rounds — the chosen one does the chore.'),
   ('Coin Flip', 'Call it in the air. Wrong call loses.'),
   ('Thumb War', 'Lock hands, thumbs up. First to pin the other''s thumb for 3 seconds loses.'),
   ('Staring Contest', 'Look each other in the eyes. First to blink or laugh loses.'),
