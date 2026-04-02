@@ -117,7 +117,7 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           <Clock className="size-3" />
-          Due {new Date(chore.due_date).toLocaleDateString()}
+          Due {new Date(chore.due_date).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
         </span>
         {creatorName && <span>Created by {creatorName}</span>}
         {chore.recurrence && (
