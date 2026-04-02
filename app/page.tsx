@@ -16,7 +16,7 @@ export default function Home() {
           Foundation ready
         </p>
         <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-          ChoresTracker starter
+          ChoresTracker
         </h1>
         <p className="max-w-2xl text-base text-muted-foreground sm:text-lg">
           Next.js App Router, TypeScript, Supabase, Lucide, and Shadcn UI are
