@@ -200,19 +200,19 @@ function TickerAnimation({
 
   useEffect(() => {
     let tick = 0;
-    let delay = 60;
-    const maxTicks = 60 + Math.floor(Math.random() * 15);
+    let delay = 50;
+    const maxTicks = 35;
 
     function step() {
       tick++;
       if (tick >= maxTicks) {
         setCurrent(games.indexOf(winner));
         setStopped(true);
-        setTimeout(onEnd, 800);
+        setTimeout(onEnd, 500);
         return;
       }
       setCurrent((prev) => (prev + 1) % games.length);
-      delay = 60 + (tick / maxTicks) * 400;
+      delay = 50 + (tick / maxTicks) * 250;
       setTimeout(step, delay);
     }
 
@@ -245,7 +245,7 @@ function SlotMachineAnimation({
   const [offset, setOffset] = useState(0);
   const [done, setDone] = useState(false);
   const itemHeight = 48;
-  const reel = [...Array(16)].flatMap(() => games);
+  const reel = [...Array(10)].flatMap(() => games);
   reel.push(winner);
   const finalOffset = (reel.length - 1) * itemHeight;
 
@@ -254,7 +254,7 @@ function SlotMachineAnimation({
     const endTimer = setTimeout(() => {
       setDone(true);
       onEnd();
-    }, 6500);
+    }, 5000);
     return () => {
       clearTimeout(t);
       clearTimeout(endTimer);
@@ -270,7 +270,7 @@ function SlotMachineAnimation({
       <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-background to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-background to-transparent" />
       <div
-        className="transition-transform duration-[6000ms] ease-[cubic-bezier(0.15,0.85,0.3,1)]"
+        className="transition-transform duration-[4500ms] ease-[cubic-bezier(0.15,0.85,0.3,1)]"
         style={{ transform: `translateY(-${offset - itemHeight * 2}px)` }}
       >
         {reel.map((name, i) => (
@@ -306,9 +306,15 @@ function EliminationAnimation({
     const toEliminate = games.filter((g) => g !== winner);
     let i = 0;
 
+    // Calculate timing to fit ~5s total
+    const totalItems = toEliminate.length;
+    const perItem = Math.min(800, 4000 / Math.max(totalItems, 1));
+    const flashTime = perItem * 0.45;
+    const pauseTime = perItem * 0.55;
+
     function eliminateNext() {
       if (i >= toEliminate.length) {
-        setTimeout(onEnd, 1200);
+        setTimeout(onEnd, 600);
         return;
       }
       setFlashing(toEliminate[i]);
@@ -316,11 +322,11 @@ function EliminationAnimation({
         setEliminated((prev) => new Set(prev).add(toEliminate[i]));
         setFlashing(null);
         i++;
-        setTimeout(eliminateNext, 900);
-      }, 700);
+        setTimeout(eliminateNext, pauseTime);
+      }, flashTime);
     }
 
-    setTimeout(eliminateNext, 1000);
+    setTimeout(eliminateNext, 400);
   }, [games, winner, onEnd]);
 
   return (
@@ -363,11 +369,11 @@ function WheelAnimation({
   const [rotation, setRotation] = useState(0);
   const segmentAngle = 360 / games.length;
   const winnerIndex = games.indexOf(winner);
-  const targetAngle = 360 * 10 + (360 - winnerIndex * segmentAngle - segmentAngle / 2);
+  const targetAngle = 360 * 6 + (360 - winnerIndex * segmentAngle - segmentAngle / 2);
 
   useEffect(() => {
     const t = setTimeout(() => setRotation(targetAngle), 50);
-    const endTimer = setTimeout(onEnd, 8200);
+    const endTimer = setTimeout(onEnd, 5200);
     return () => {
       clearTimeout(t);
       clearTimeout(endTimer);
@@ -394,7 +400,7 @@ function WheelAnimation({
         width="240"
         height="240"
         viewBox="0 0 240 240"
-        className="transition-transform duration-[8000ms] ease-[cubic-bezier(0.15,0.85,0.25,1)]"
+        className="transition-transform duration-[5000ms] ease-[cubic-bezier(0.15,0.85,0.25,1)]"
         style={{ transform: `rotate(${rotation}deg)` }}
       >
         {games.map((game, i) => {
@@ -452,12 +458,12 @@ function ShuffleDeckAnimation({
   const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("gather"), 3000);
+    const t1 = setTimeout(() => setPhase("gather"), 1800);
     const t2 = setTimeout(() => {
       setPhase("reveal");
       setRevealed(true);
-    }, 5500);
-    const t3 = setTimeout(onEnd, 7000);
+    }, 3500);
+    const t3 = setTimeout(onEnd, 5000);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
