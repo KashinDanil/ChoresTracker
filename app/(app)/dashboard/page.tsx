@@ -59,7 +59,9 @@ export default async function DashboardPage() {
     .filter((c) => c.status !== "done")
     .map((c) => ({ ...c, effectiveStatus: c.status }));
 
-  const doneChores = (chores ?? []).filter((c) => c.status === "done");
+  const doneChores = (chores ?? [])
+    .filter((c) => c.status === "done")
+    .sort((a, b) => new Date(b.completed_at ?? 0).getTime() - new Date(a.completed_at ?? 0).getTime());
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
