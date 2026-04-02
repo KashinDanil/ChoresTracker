@@ -191,7 +191,8 @@ export async function pickGame(choreId: string) {
 
   if (error) return { error: error.message };
 
-  revalidatePath("/dashboard");
+  // Don't revalidate here — the modal stays open for assignee selection.
+  // revalidatePath will be called by assignChosenOne after the user assigns.
   return { success: true, gameName: randomGame.name, allGameNames };
 }
 
