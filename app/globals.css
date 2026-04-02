@@ -130,7 +130,11 @@
     -moz-osx-font-smoothing: grayscale;
   }
   a, button, [role="menuitem"], [role="option"], [data-slot="trigger"],
-  summary, [tabindex="0"], label[for] {
+  summary, [tabindex="0"], label[for],
+  input[type="date"], input[type="datetime-local"], input[type="time"],
+  input[type="file"], input[type="color"], input[type="range"],
+  input[type="checkbox"], input[type="radio"],
+  select, [data-slot="select-trigger"], [data-slot="collapsible-trigger"] {
     @apply cursor-pointer;
   }
   input, textarea, select {

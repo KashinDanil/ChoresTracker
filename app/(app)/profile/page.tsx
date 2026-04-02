@@ -70,7 +70,7 @@ export default function ProfilePage() {
               />
             </div>
           </CardContent>
-          <CardFooter className="mt-2">
+          <CardFooter className="mt-4">
             <Button type="submit" disabled={pending}>
               {pending ? "Saving…" : "Save"}
             </Button>
