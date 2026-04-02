@@ -6,16 +6,16 @@ import { useTheme } from "next-themes";
 const lightIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
   <rect width="32" height="32" rx="8" fill="#e8e8e8"/>
   <g transform="translate(4,4)" fill="none" stroke="#1a1a1a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M10 6h10"/><path d="M10 12h10"/><path d="M10 18h10"/>
-    <path d="M3 6l1.5 1.5L7 5"/><path d="M3 12l1.5 1.5L7 11"/>
+    <path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/>
+    <path d="m3 7 2 2 4-4"/><path d="m3 17 2 2 4-4"/>
   </g>
 </svg>`;
 
 const darkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
   <rect width="32" height="32" rx="8" fill="#1a1a1a"/>
   <g transform="translate(4,4)" fill="none" stroke="#e8e8e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M10 6h10"/><path d="M10 12h10"/><path d="M10 18h10"/>
-    <path d="M3 6l1.5 1.5L7 5"/><path d="M3 12l1.5 1.5L7 11"/>
+    <path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/>
+    <path d="m3 7 2 2 4-4"/><path d="m3 17 2 2 4-4"/>
   </g>
 </svg>`;
 
