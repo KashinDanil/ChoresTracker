@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { cookies } from "next/headers";
-import { isSupabaseConfigured, supabaseEnv } from "@/lib/supabase/env";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 
 type CookieToSet = {
   name: string;
@@ -11,15 +11,17 @@ type CookieToSet = {
 };
 
 export async function getSupabaseServerClient(): Promise<SupabaseClient<Database> | null> {
-  if (!isSupabaseConfigured) {
+  const { url, anonKey, isConfigured } = getSupabaseEnv();
+
+  if (!isConfigured) {
     return null;
   }
 
   const cookieStore = await cookies();
 
   return createServerClient<Database>(
-    supabaseEnv.url as string,
-    supabaseEnv.anonKey as string,
+    url!,
+    anonKey!,
     {
       cookies: {
         getAll() {

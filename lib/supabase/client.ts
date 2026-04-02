@@ -1,20 +1,19 @@
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
-import { isSupabaseConfigured, supabaseEnv } from "@/lib/supabase/env";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 
 let browserClient: SupabaseClient<Database> | null = null;
 
 export function getSupabaseBrowserClient(): SupabaseClient<Database> | null {
-  if (!isSupabaseConfigured) {
+  const { url, anonKey, isConfigured } = getSupabaseEnv();
+
+  if (!isConfigured) {
     return null;
   }
 
   if (!browserClient) {
-    browserClient = createBrowserClient<Database>(
-      supabaseEnv.url as string,
-      supabaseEnv.anonKey as string,
-    );
+    browserClient = createBrowserClient<Database>(url!, anonKey!);
   }
 
   return browserClient;

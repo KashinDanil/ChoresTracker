@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { Database, ListChecks, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { isSupabaseConfigured } from "@/lib/supabase/env";
+import { getSupabaseEnv } from "@/lib/supabase/env";
 
 export default function Home() {
-  const supabaseStatus = isSupabaseConfigured
+  const { isConfigured } = getSupabaseEnv();
+  const supabaseStatus = isConfigured
     ? "Configured"
     : "Not configured (safe mode enabled)";
 
