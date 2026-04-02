@@ -202,6 +202,8 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_household: { Args: { household_name: string }; Returns: string }
+      get_user_household_ids: { Args: never; Returns: string[] }
       join_household_by_invite: { Args: { code: string }; Returns: string }
     }
     Enums: {

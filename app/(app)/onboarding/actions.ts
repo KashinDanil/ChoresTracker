@@ -15,20 +15,12 @@ export async function createHousehold(formData: FormData) {
   const name = formData.get("name") as string;
   if (!name?.trim()) return { error: "Household name is required." };
 
-  const { data: household, error } = await supabase
-    .from("households")
-    .insert({ name: name.trim(), created_by: user.id })
-    .select()
-    .single();
+  // Use RPC to create household and add creator as member in one step
+  const { error } = await supabase.rpc("create_household", {
+    household_name: name.trim(),
+  });
 
   if (error) return { error: error.message };
-
-  // Add creator as first member
-  const { error: memberError } = await supabase
-    .from("household_members")
-    .insert({ household_id: household.id, user_id: user.id });
-
-  if (memberError) return { error: memberError.message };
 
   redirect("/dashboard");
 }
