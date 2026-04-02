@@ -173,7 +173,7 @@ export async function pickGame(choreId: string) {
   // Fetch all games
   const { data: games, error: gamesError } = await supabase
     .from("games")
-    .select("name");
+    .select("name, description");
 
   if (gamesError || !games?.length) return { error: "No games available." };
 
@@ -193,7 +193,7 @@ export async function pickGame(choreId: string) {
 
   // Don't revalidate here — the modal stays open for assignee selection.
   // revalidatePath will be called by assignChosenOne after the user assigns.
-  return { success: true, gameName: randomGame.name, allGameNames };
+  return { success: true, gameName: randomGame.name, gameDescription: randomGame.description, allGameNames };
 }
 
 export async function assignChosenOne(choreId: string, userId: string) {

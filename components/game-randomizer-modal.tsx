@@ -49,6 +49,7 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
   const [animationType, setAnimationType] = useState<AnimationType>("ticker");
   const [allGames, setAllGames] = useState<string[]>([]);
   const [chosenGame, setChosenGame] = useState("");
+  const [gameDescription, setGameDescription] = useState("");
   const [selectedMember, setSelectedMember] = useState("");
   const [assignPending, setAssignPending] = useState(false);
   const gamePickedRef = useRef(false);
@@ -57,7 +58,7 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
     setPhase("animating");
 
     const result = await pickGame(choreId);
-    if (result.error || !result.gameName || !result.allGameNames) {
+    if (result.error || !result.gameName || !result.allGameNames || !result.gameDescription) {
       toast.error(result.error ?? "Failed to pick a game");
       setOpen(false);
       setPhase("idle");
@@ -70,6 +71,7 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
 
     setAllGames(result.allGameNames);
     setChosenGame(result.gameName);
+    setGameDescription(result.gameDescription);
     setAnimationType(randomAnim);
   }, [choreId]);
 
@@ -149,7 +151,12 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
           )}
           {phase === "result" && (
             <div className="w-full space-y-5 animate-in fade-in zoom-in duration-300">
-              <p className="text-center text-3xl font-bold">{chosenGame}</p>
+              <div className="text-center">
+                <p className="text-3xl font-bold">{chosenGame}</p>
+                <p className="mt-2 text-sm text-muted-foreground italic">
+                  {gameDescription}
+                </p>
+              </div>
               <p className="text-center text-sm text-muted-foreground">
                 Play the game, then select the chosen one:
               </p>
