@@ -174,7 +174,7 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
       {(effectiveStatus === "pending" || effectiveStatus === "awaiting_game") && (
         <div className="flex flex-wrap gap-2">
           {effectiveStatus === "awaiting_game" && (
-            <GameRandomizerModal choreId={chore.id} disabled={pending} />
+            <GameRandomizerModal choreId={chore.id} members={members} disabled={pending} />
           )}
           <Button
             variant="outline"

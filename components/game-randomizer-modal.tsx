@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Dices } from "lucide-react";
 import { toast } from "sonner";
-import { pickGame } from "@/app/(app)/dashboard/actions";
+import { pickGame, assignChosenOne } from "@/app/(app)/dashboard/actions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -12,6 +12,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 type AnimationType = "ticker" | "slotMachine" | "elimination" | "wheel" | "shuffleDeck";
 
@@ -23,17 +30,25 @@ const ANIMATION_NAMES: Record<AnimationType, string> = {
   shuffleDeck: "Card Shuffle",
 };
 
+type Member = {
+  user_id: string;
+  display_name: string;
+};
+
 type Props = {
   choreId: string;
+  members: Member[];
   disabled?: boolean;
 };
 
-export function GameRandomizerModal({ choreId, disabled }: Props) {
+export function GameRandomizerModal({ choreId, members, disabled }: Props) {
   const [open, setOpen] = useState(false);
-  const [phase, setPhase] = useState<"idle" | "animating" | "done">("idle");
+  const [phase, setPhase] = useState<"idle" | "animating" | "done" | "assigning">("idle");
   const [animationType, setAnimationType] = useState<AnimationType>("ticker");
   const [allGames, setAllGames] = useState<string[]>([]);
   const [chosenGame, setChosenGame] = useState("");
+  const [selectedMember, setSelectedMember] = useState("");
+  const [assignPending, setAssignPending] = useState(false);
 
   const startRandomizer = useCallback(async () => {
     setPhase("animating");
@@ -60,11 +75,24 @@ export function GameRandomizerModal({ choreId, disabled }: Props) {
     }
     if (!open) {
       setPhase("idle");
+      setSelectedMember("");
     }
   }, [open, phase, startRandomizer]);
 
   const handleAnimationEnd = () => {
     setPhase("done");
+  };
+
+  const handleAssign = async () => {
+    if (!selectedMember) return;
+    setAssignPending(true);
+    const result = await assignChosenOne(choreId, selectedMember);
+    setAssignPending(false);
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      setOpen(false);
+    }
   };
 
   return (
@@ -78,7 +106,11 @@ export function GameRandomizerModal({ choreId, disabled }: Props) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">
-            {phase === "done" ? "The game is..." : "Picking a game..."}
+            {phase === "done"
+              ? "The game is..."
+              : phase === "assigning"
+                ? "Who is the chosen one?"
+                : "Picking a game..."}
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center py-6">
@@ -88,49 +120,58 @@ export function GameRandomizerModal({ choreId, disabled }: Props) {
                 {ANIMATION_NAMES[animationType]}
               </p>
               {animationType === "ticker" && (
-                <TickerAnimation
-                  games={allGames}
-                  winner={chosenGame}
-                  onEnd={handleAnimationEnd}
-                />
+                <TickerAnimation games={allGames} winner={chosenGame} onEnd={handleAnimationEnd} />
               )}
               {animationType === "slotMachine" && (
-                <SlotMachineAnimation
-                  games={allGames}
-                  winner={chosenGame}
-                  onEnd={handleAnimationEnd}
-                />
+                <SlotMachineAnimation games={allGames} winner={chosenGame} onEnd={handleAnimationEnd} />
               )}
               {animationType === "elimination" && (
-                <EliminationAnimation
-                  games={allGames}
-                  winner={chosenGame}
-                  onEnd={handleAnimationEnd}
-                />
+                <EliminationAnimation games={allGames} winner={chosenGame} onEnd={handleAnimationEnd} />
               )}
               {animationType === "wheel" && (
-                <WheelAnimation
-                  games={allGames}
-                  winner={chosenGame}
-                  onEnd={handleAnimationEnd}
-                />
+                <WheelAnimation games={allGames} winner={chosenGame} onEnd={handleAnimationEnd} />
               )}
               {animationType === "shuffleDeck" && (
-                <ShuffleDeckAnimation
-                  games={allGames}
-                  winner={chosenGame}
-                  onEnd={handleAnimationEnd}
-                />
+                <ShuffleDeckAnimation games={allGames} winner={chosenGame} onEnd={handleAnimationEnd} />
               )}
             </>
           )}
           {phase === "done" && (
-            <div className="space-y-4 text-center animate-in fade-in zoom-in duration-300">
+            <div className="space-y-5 text-center animate-in fade-in zoom-in duration-300">
               <p className="text-3xl font-bold">{chosenGame}</p>
               <p className="text-sm text-muted-foreground">
-                Time to play! Select the chosen one after the game.
+                Play the game, then select the chosen one below.
               </p>
-              <Button onClick={() => setOpen(false)}>Got it</Button>
+              <Button onClick={() => setPhase("assigning")}>Continue</Button>
+            </div>
+          )}
+          {phase === "assigning" && (
+            <div className="w-full space-y-4 animate-in fade-in duration-200">
+              <div className="mx-auto rounded-lg border bg-muted/50 px-4 py-2 text-center">
+                <p className="text-xs text-muted-foreground">Game</p>
+                <p className="font-semibold text-primary">{chosenGame}</p>
+              </div>
+              <div className="space-y-2">
+                <Select value={selectedMember} onValueChange={setSelectedMember}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select the chosen one" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {members.map((m) => (
+                      <SelectItem key={m.user_id} value={m.user_id}>
+                        {m.display_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                className="w-full"
+                onClick={handleAssign}
+                disabled={assignPending || !selectedMember}
+              >
+                {assignPending ? "Assigning…" : "Assign"}
+              </Button>
             </div>
           )}
           {phase === "animating" && allGames.length === 0 && (
@@ -158,19 +199,18 @@ function TickerAnimation({
   useEffect(() => {
     let tick = 0;
     let delay = 60;
-    const maxTicks = 30 + Math.floor(Math.random() * 10);
+    const maxTicks = 60 + Math.floor(Math.random() * 15);
 
     function step() {
       tick++;
-      // Ensure last tick lands on the winner
       if (tick >= maxTicks) {
         setCurrent(games.indexOf(winner));
         setStopped(true);
-        setTimeout(onEnd, 600);
+        setTimeout(onEnd, 800);
         return;
       }
       setCurrent((prev) => (prev + 1) % games.length);
-      delay = 60 + (tick / maxTicks) * 300; // Slow down
+      delay = 60 + (tick / maxTicks) * 400;
       setTimeout(step, delay);
     }
 
@@ -203,18 +243,16 @@ function SlotMachineAnimation({
   const [offset, setOffset] = useState(0);
   const [done, setDone] = useState(false);
   const itemHeight = 48;
-  // Build a long reel: repeat games many times, end with winner
-  const reel = [...Array(8)].flatMap(() => games);
+  const reel = [...Array(16)].flatMap(() => games);
   reel.push(winner);
   const finalOffset = (reel.length - 1) * itemHeight;
 
   useEffect(() => {
-    // Trigger the scroll after mount
     const t = setTimeout(() => setOffset(finalOffset), 50);
     const endTimer = setTimeout(() => {
       setDone(true);
       onEnd();
-    }, 3500);
+    }, 6500);
     return () => {
       clearTimeout(t);
       clearTimeout(endTimer);
@@ -227,7 +265,7 @@ function SlotMachineAnimation({
       style={{ perspective: "300px" }}
     >
       <div
-        className="transition-transform duration-[3000ms] ease-[cubic-bezier(0.15,0.85,0.3,1)]"
+        className="transition-transform duration-[6000ms] ease-[cubic-bezier(0.15,0.85,0.3,1)]"
         style={{ transform: `translateY(-${offset}px)` }}
       >
         {reel.map((name, i) => (
@@ -264,7 +302,7 @@ function EliminationAnimation({
 
     function eliminateNext() {
       if (i >= toEliminate.length) {
-        setTimeout(onEnd, 800);
+        setTimeout(onEnd, 1200);
         return;
       }
       setFlashing(toEliminate[i]);
@@ -272,11 +310,11 @@ function EliminationAnimation({
         setEliminated((prev) => new Set(prev).add(toEliminate[i]));
         setFlashing(null);
         i++;
-        setTimeout(eliminateNext, 500);
-      }, 400);
+        setTimeout(eliminateNext, 900);
+      }, 700);
     }
 
-    setTimeout(eliminateNext, 600);
+    setTimeout(eliminateNext, 1000);
   }, [games, winner, onEnd]);
 
   return (
@@ -319,12 +357,11 @@ function WheelAnimation({
   const [rotation, setRotation] = useState(0);
   const segmentAngle = 360 / games.length;
   const winnerIndex = games.indexOf(winner);
-  // Land on the winner segment (center it at the top)
-  const targetAngle = 360 * 5 + (360 - winnerIndex * segmentAngle - segmentAngle / 2);
+  const targetAngle = 360 * 10 + (360 - winnerIndex * segmentAngle - segmentAngle / 2);
 
   useEffect(() => {
     const t = setTimeout(() => setRotation(targetAngle), 50);
-    const endTimer = setTimeout(onEnd, 4200);
+    const endTimer = setTimeout(onEnd, 8200);
     return () => {
       clearTimeout(t);
       clearTimeout(endTimer);
@@ -342,7 +379,6 @@ function WheelAnimation({
 
   return (
     <div className="relative">
-      {/* Pointer */}
       <div className="absolute left-1/2 top-0 z-10 -translate-x-1/2 -translate-y-1 text-primary">
         <svg width="20" height="16" viewBox="0 0 20 16">
           <polygon points="10,16 0,0 20,0" fill="currentColor" />
@@ -352,7 +388,7 @@ function WheelAnimation({
         width="240"
         height="240"
         viewBox="0 0 240 240"
-        className="transition-transform duration-[4000ms] ease-[cubic-bezier(0.15,0.85,0.25,1)]"
+        className="transition-transform duration-[8000ms] ease-[cubic-bezier(0.15,0.85,0.25,1)]"
         style={{ transform: `rotate(${rotation}deg)` }}
       >
         {games.map((game, i) => {
@@ -410,12 +446,12 @@ function ShuffleDeckAnimation({
   const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase("gather"), 1500);
+    const t1 = setTimeout(() => setPhase("gather"), 3000);
     const t2 = setTimeout(() => {
       setPhase("reveal");
       setRevealed(true);
-    }, 2800);
-    const t3 = setTimeout(onEnd, 3800);
+    }, 5500);
+    const t3 = setTimeout(onEnd, 7000);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
