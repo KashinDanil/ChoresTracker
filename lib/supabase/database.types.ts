@@ -202,7 +202,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      join_household_by_invite: { Args: { code: string }; Returns: string }
     }
     Enums: {
       chore_status:

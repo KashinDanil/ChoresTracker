@@ -42,14 +42,16 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Redirect unauthenticated users away from protected routes
-  if (!user && pathname.startsWith("/dashboard") || !user && pathname.startsWith("/onboarding") || !user && pathname.startsWith("/settings")) {
+  const protectedPaths = ["/dashboard", "/onboarding", "/settings"];
+  if (!user && protectedPaths.some((p) => pathname.startsWith(p))) {
     const url = request.nextUrl.clone();
     url.pathname = "/sign-in";
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from auth pages
-  if (user && (pathname === "/sign-in" || pathname === "/sign-up")) {
+  // Redirect authenticated users away from auth pages and landing
+  const authPaths = ["/sign-in", "/sign-up"];
+  if (user && (pathname === "/" || authPaths.includes(pathname))) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
     return NextResponse.redirect(url);
