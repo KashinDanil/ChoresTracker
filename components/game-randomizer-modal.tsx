@@ -95,7 +95,8 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
   };
 
   const handleAnimationEnd = () => {
-    setPhase("result");
+    // Brief pause so the user can see the final animation state before the result appears
+    setTimeout(() => setPhase("result"), 500);
   };
 
   const handleAssign = async () => {
@@ -215,10 +216,22 @@ function TickerAnimation({
       if (tick >= maxTicks) {
         setCurrent(games.indexOf(winner));
         setStopped(true);
-        setTimeout(onEnd, 500);
+        setTimeout(onEnd, 1000);
         return;
       }
-      setCurrent((prev) => (prev + 1) % games.length);
+      // Walk toward the winner in the last few ticks
+      const remaining = maxTicks - tick;
+      if (remaining <= games.length) {
+        const winnerIdx = games.indexOf(winner);
+        const stepsToWinner = (winnerIdx - (tick % games.length) + games.length) % games.length;
+        if (remaining === stepsToWinner || remaining === 1) {
+          setCurrent(winnerIdx);
+        } else {
+          setCurrent((prev) => (prev + 1) % games.length);
+        }
+      } else {
+        setCurrent((prev) => (prev + 1) % games.length);
+      }
       delay = 50 + (tick / maxTicks) * 250;
       setTimeout(step, delay);
     }
@@ -258,10 +271,11 @@ function SlotMachineAnimation({
 
   useEffect(() => {
     const t = setTimeout(() => setOffset(finalOffset), 50);
+    // 4500ms transition + 1000ms pause to see the result
     const endTimer = setTimeout(() => {
       setDone(true);
       onEnd();
-    }, 5000);
+    }, 5500);
     return () => {
       clearTimeout(t);
       clearTimeout(endTimer);
@@ -321,7 +335,7 @@ function EliminationAnimation({
 
     function eliminateNext() {
       if (i >= toEliminate.length) {
-        setTimeout(onEnd, 600);
+        setTimeout(onEnd, 1000);
         return;
       }
       setFlashing(toEliminate[i]);
@@ -380,7 +394,8 @@ function WheelAnimation({
 
   useEffect(() => {
     const t = setTimeout(() => setRotation(targetAngle), 50);
-    const endTimer = setTimeout(onEnd, 5200);
+    // 5000ms transition + 1000ms pause to see where it landed
+    const endTimer = setTimeout(onEnd, 6000);
     return () => {
       clearTimeout(t);
       clearTimeout(endTimer);
@@ -470,7 +485,7 @@ function ShuffleDeckAnimation({
       setPhase("reveal");
       setRevealed(true);
     }, 3500);
-    const t3 = setTimeout(onEnd, 5000);
+    const t3 = setTimeout(onEnd, 5500);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
