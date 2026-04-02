@@ -56,16 +56,21 @@ export default function SignInPage() {
             />
           </div>
         </CardContent>
-        <CardFooter className="mt-2 flex flex-col gap-3">
+        <CardFooter className="mt-4 flex flex-col gap-4">
           <Button type="submit" className="w-full" disabled={pending}>
             {pending ? "Signing in…" : "Sign in"}
           </Button>
-          <p className="text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link href="/sign-up" className="text-foreground underline">
-              Sign up
+          <div className="flex flex-col items-center gap-1 text-sm text-muted-foreground">
+            <p>
+              Don&apos;t have an account?{" "}
+              <Link href="/sign-up" className="text-foreground underline">
+                Sign up
+              </Link>
+            </p>
+            <Link href="/" className="hover:text-foreground transition-colors">
+              Back to home
             </Link>
-          </p>
+          </div>
         </CardFooter>
       </form>
     </Card>

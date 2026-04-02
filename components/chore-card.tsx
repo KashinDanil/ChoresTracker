@@ -55,11 +55,11 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  pending: "bg-muted text-muted-foreground",
-  awaiting_game: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
-  awaiting_result: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-  assigned: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  done: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  pending: "border-muted-foreground/30 bg-muted text-muted-foreground",
+  awaiting_game: "border-yellow-300 bg-yellow-50 text-yellow-800 dark:border-yellow-700 dark:bg-yellow-950 dark:text-yellow-200",
+  awaiting_result: "border-orange-300 bg-orange-50 text-orange-800 dark:border-orange-700 dark:bg-orange-950 dark:text-orange-200",
+  assigned: "border-blue-300 bg-blue-50 text-blue-800 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-200",
+  done: "border-green-300 bg-green-50 text-green-800 dark:border-green-700 dark:bg-green-950 dark:text-green-200",
 };
 
 function formatDate(iso: string) {
@@ -127,16 +127,16 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
   const isDone = effectiveStatus === "done";
 
   return (
-    <div className="rounded-xl border p-4 space-y-3">
+    <div className="rounded-xl border p-4 space-y-3 transition-shadow hover:shadow-sm">
       <div className="flex items-start justify-between gap-2">
         <div className="space-y-1">
-          <h3 className="font-medium">{chore.title}</h3>
+          <h3 className="font-medium text-foreground">{chore.title}</h3>
           {chore.description && (
-            <p className="text-sm text-muted-foreground">{chore.description}</p>
+            <p className="text-sm text-foreground/70">{chore.description}</p>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Badge variant="secondary" className={statusColors[effectiveStatus]}>
+          <Badge variant="outline" className={`px-2.5 py-1 text-xs font-semibold ${statusColors[effectiveStatus]}`}>
             {statusLabels[effectiveStatus]}
           </Badge>
           {isCreator && !isDone && (
@@ -153,14 +153,18 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-        <span className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+        <span className="flex items-center gap-1 text-foreground/50">
           <Clock className="size-3" />
-          {mounted ? `Due ${formatDate(chore.due_date)}` : "Due …"}
+          {mounted ? formatDate(chore.due_date) : "…"}
         </span>
-        {creatorName && <span>Created by {creatorName}</span>}
+        {creatorName && (
+          <span className="text-foreground/50">by {creatorName}</span>
+        )}
         {chore.recurrence && (
-          <span className="capitalize">{chore.recurrence}</span>
+          <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+            {chore.recurrence}
+          </span>
         )}
       </div>
 

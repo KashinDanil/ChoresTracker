@@ -89,8 +89,8 @@ export default async function DashboardPage() {
 
       {doneChores.length > 0 && (
         <Collapsible className="mt-8">
-          <CollapsibleTrigger className="flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground">
-            <ChevronDown className="size-4" />
+          <CollapsibleTrigger className="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground">
+            <ChevronDown className="size-4 transition-transform duration-200 [[data-state=open]>&]:rotate-180" />
             Done ({doneChores.length})
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-3 space-y-3">

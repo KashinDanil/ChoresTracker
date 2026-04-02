@@ -129,7 +129,8 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-  a {
+  a, button, [role="menuitem"], [role="option"], [data-slot="trigger"],
+  summary, [tabindex="0"], label[for] {
     @apply cursor-pointer;
   }
   input, textarea, select {
