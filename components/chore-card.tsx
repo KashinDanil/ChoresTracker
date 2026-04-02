@@ -8,7 +8,9 @@ import {
   pickGame,
   assignLoser,
   markDone,
+  completeEarly,
 } from "@/app/(app)/dashboard/actions";
+import { EditChoreDialog } from "@/components/edit-chore-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -100,6 +102,14 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
     else toast.success("Chore marked as done!");
   }
 
+  async function handleCompleteEarly() {
+    setPending(true);
+    const result = await completeEarly(chore.id);
+    setPending(false);
+    if (result.error) toast.error(result.error);
+    else toast.success("Chore completed!");
+  }
+
   return (
     <div className="rounded-xl border p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
@@ -132,26 +142,39 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
       </div>
 
       {/* Status-dependent actions */}
-      {effectiveStatus === "pending" && isCreator && (
-        <div className="flex gap-2">
+      {(effectiveStatus === "pending" || effectiveStatus === "awaiting_game") && (
+        <div className="flex flex-wrap gap-2">
+          {effectiveStatus === "awaiting_game" && (
+            <Button size="sm" onClick={handlePickGame} disabled={pending}>
+              <Dices className="mr-1 size-4" />
+              {pending ? "Picking…" : "Pick a game"}
+            </Button>
+          )}
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={handleDelete}
+            onClick={handleCompleteEarly}
             disabled={pending}
-            className="text-destructive hover:text-destructive"
           >
-            <Trash2 className="mr-1 size-3" />
-            Delete
+            <UserCheck className="mr-1 size-3" />
+            Complete now
           </Button>
+          {isCreator && (
+            <>
+              <EditChoreDialog chore={chore} />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleDelete}
+                disabled={pending}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="mr-1 size-3" />
+                Delete
+              </Button>
+            </>
+          )}
         </div>
-      )}
-
-      {effectiveStatus === "awaiting_game" && (
-        <Button size="sm" onClick={handlePickGame} disabled={pending}>
-          <Dices className="mr-1 size-4" />
-          {pending ? "Picking…" : "Pick a game"}
-        </Button>
       )}
 
       {effectiveStatus === "awaiting_result" && (

@@ -232,3 +232,66 @@ export async function markDone(choreId: string) {
   revalidatePath("/dashboard");
   return { success: true };
 }
+
+export async function completeEarly(choreId: string) {
+  const supabase = await getSupabaseServerClient();
+  if (!supabase) return { error: "Supabase is not configured." };
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Not authenticated." };
+
+  // Fetch the chore for recurrence info
+  const { data: chore, error: fetchError } = await supabase
+    .from("chores")
+    .select("*")
+    .eq("id", choreId)
+    .neq("status", "done")
+    .single();
+
+  if (fetchError || !chore) return { error: "Chore not found." };
+
+  // Mark as done with current user as the one who completed it
+  const { error } = await supabase
+    .from("chores")
+    .update({
+      status: "done" as const,
+      assigned_to: user.id,
+      completed_at: new Date().toISOString(),
+    })
+    .eq("id", choreId);
+
+  if (error) return { error: error.message };
+
+  // If repeatable, create the next occurrence
+  if (chore.recurrence) {
+    const dueDate = new Date(chore.due_date);
+    switch (chore.recurrence) {
+      case "daily":
+        dueDate.setDate(dueDate.getDate() + 1);
+        break;
+      case "weekly":
+        dueDate.setDate(dueDate.getDate() + 7);
+        break;
+      case "biweekly":
+        dueDate.setDate(dueDate.getDate() + 14);
+        break;
+      case "monthly":
+        dueDate.setMonth(dueDate.getMonth() + 1);
+        break;
+    }
+
+    await supabase.from("chores").insert({
+      household_id: chore.household_id,
+      title: chore.title,
+      description: chore.description,
+      due_date: dueDate.toISOString(),
+      created_by: chore.created_by,
+      recurrence: chore.recurrence,
+    });
+  }
+
+  revalidatePath("/dashboard");
+  return { success: true };
+}
