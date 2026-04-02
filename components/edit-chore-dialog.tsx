@@ -35,10 +35,20 @@ export function EditChoreDialog({ chore }: { chore: Chore }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
 
-  // Format date for datetime-local input (YYYY-MM-DDTHH:MM)
-  const defaultDate = new Date(chore.due_date).toISOString().slice(0, 16);
+  // Format date for datetime-local input in local timezone (YYYY-MM-DDTHH:MM)
+  function toLocalDatetime(iso: string) {
+    const d = new Date(iso);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  const defaultDate = toLocalDatetime(chore.due_date);
 
   async function handleSubmit(formData: FormData) {
+    // Convert local datetime to UTC ISO string before sending to server
+    const localDate = formData.get("dueDate") as string;
+    if (localDate) {
+      formData.set("dueDate", new Date(localDate).toISOString());
+    }
     setPending(true);
     const result = await updateChore(formData);
     setPending(false);

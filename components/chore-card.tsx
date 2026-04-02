@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Clock, Dices, Trash2, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -62,9 +62,23 @@ const statusColors: Record<string, string> = {
   done: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
 };
 
+function formatDate(iso: string) {
+  return new Date(iso).toLocaleString([], {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
 export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Props) {
   const [pending, setPending] = useState(false);
   const [selectedLoser, setSelectedLoser] = useState("");
+  // Avoid hydration mismatch by rendering dates only on the client
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const isCreator = chore.created_by === currentUserId;
   const isAssignee = chore.assigned_to === currentUserId;
@@ -110,6 +124,8 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
     else toast.success("Chore completed!");
   }
 
+  const isDone = effectiveStatus === "done";
+
   return (
     <div className="rounded-xl border p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
@@ -119,27 +135,44 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
             <p className="text-sm text-muted-foreground">{chore.description}</p>
           )}
         </div>
-        <Badge variant="secondary" className={statusColors[effectiveStatus]}>
-          {statusLabels[effectiveStatus]}
-        </Badge>
+        <div className="flex items-center gap-2 shrink-0">
+          <Badge variant="secondary" className={statusColors[effectiveStatus]}>
+            {statusLabels[effectiveStatus]}
+          </Badge>
+          {isCreator && !isDone && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-7 text-muted-foreground hover:text-destructive"
+              onClick={handleDelete}
+              disabled={pending}
+            >
+              <Trash2 className="size-3.5" />
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           <Clock className="size-3" />
-          Due {new Date(chore.due_date).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
+          {mounted ? `Due ${formatDate(chore.due_date)}` : "Due …"}
         </span>
         {creatorName && <span>Created by {creatorName}</span>}
         {chore.recurrence && (
           <span className="capitalize">{chore.recurrence}</span>
         )}
-        {assigneeName && effectiveStatus !== "done" && (
-          <span className="flex items-center gap-1">
-            <UserCheck className="size-3" />
-            Assigned to {assigneeName}
-          </span>
-        )}
       </div>
+
+      {/* Highlighted assignee */}
+      {assigneeName && !isDone && (
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-300">
+            <UserCheck className="mr-1 size-3" />
+            Assigned to {assigneeName}
+          </Badge>
+        </div>
+      )}
 
       {/* Status-dependent actions */}
       {(effectiveStatus === "pending" || effectiveStatus === "awaiting_game") && (
@@ -159,21 +192,7 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
             <UserCheck className="mr-1 size-3" />
             Complete now
           </Button>
-          {isCreator && (
-            <>
-              <EditChoreDialog chore={chore} />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleDelete}
-                disabled={pending}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="mr-1 size-3" />
-                Delete
-              </Button>
-            </>
-          )}
+          {isCreator && <EditChoreDialog chore={chore} />}
         </div>
       )}
 
@@ -215,11 +234,12 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
         </Button>
       )}
 
-      {effectiveStatus === "done" && (
+      {isDone && (
         <div className="text-xs text-muted-foreground">
-          Completed by {assigneeName}{" "}
-          {chore.completed_at &&
-            `on ${new Date(chore.completed_at).toLocaleDateString()}`}
+          Completed by{" "}
+          <span className="font-medium text-foreground">{assigneeName}</span>
+          {chore.completed_at && mounted &&
+            ` on ${formatDate(chore.completed_at)}`}
         </div>
       )}
     </div>

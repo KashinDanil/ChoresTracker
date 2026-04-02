@@ -34,7 +34,7 @@ export async function createChore(formData: FormData) {
     household_id: membership.household_id,
     title: title.trim(),
     description: description?.trim() || null,
-    due_date: new Date(dueDate).toISOString(),
+    due_date: dueDate,
     created_by: user.id,
     recurrence: recurrence as
       | "daily"
@@ -75,7 +75,7 @@ export async function updateChore(formData: FormData) {
     .update({
       title: title.trim(),
       description: description?.trim() || null,
-      due_date: new Date(dueDate).toISOString(),
+      due_date: dueDate,
       recurrence: recurrence as
         | "daily"
         | "weekly"

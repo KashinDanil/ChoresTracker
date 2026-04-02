@@ -28,6 +28,11 @@ export function CreateChoreDialog() {
   const [pending, setPending] = useState(false);
 
   async function handleSubmit(formData: FormData) {
+    // Convert local datetime to UTC ISO string before sending to server
+    const localDate = formData.get("dueDate") as string;
+    if (localDate) {
+      formData.set("dueDate", new Date(localDate).toISOString());
+    }
     setPending(true);
     const result = await createChore(formData);
     setPending(false);
