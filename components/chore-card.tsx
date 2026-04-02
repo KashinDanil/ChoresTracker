@@ -136,7 +136,7 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Badge variant="outline" className={`px-4 py-2 text-sm font-semibold ${statusColors[effectiveStatus]}`}>
+          <Badge variant="outline" className={`px-5 py-2.5 text-sm font-semibold ${statusColors[effectiveStatus]}`}>
             {statusLabels[effectiveStatus]}
           </Badge>
           {isCreator && !isDone && (
