@@ -42,7 +42,7 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Redirect unauthenticated users away from protected routes
-  const protectedPaths = ["/dashboard", "/onboarding", "/settings"];
+  const protectedPaths = ["/dashboard", "/onboarding", "/settings", "/profile"];
   if (!user && protectedPaths.some((p) => pathname.startsWith(p))) {
     const url = request.nextUrl.clone();
     url.pathname = "/sign-in";
