@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Dices } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { pickGame, assignChosenOne } from "@/app/(app)/dashboard/actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,13 +43,15 @@ type Props = {
 };
 
 export function GameRandomizerModal({ choreId, members, disabled }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [phase, setPhase] = useState<"idle" | "animating" | "done" | "assigning">("idle");
+  const [phase, setPhase] = useState<"idle" | "animating" | "result">("idle");
   const [animationType, setAnimationType] = useState<AnimationType>("ticker");
   const [allGames, setAllGames] = useState<string[]>([]);
   const [chosenGame, setChosenGame] = useState("");
   const [selectedMember, setSelectedMember] = useState("");
   const [assignPending, setAssignPending] = useState(false);
+  const gamePickedRef = useRef(false);
 
   const startRandomizer = useCallback(async () => {
     setPhase("animating");
@@ -61,6 +64,7 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
       return;
     }
 
+    gamePickedRef.current = true;
     const animations: AnimationType[] = ["ticker", "slotMachine", "elimination", "wheel", "shuffleDeck"];
     const randomAnim = animations[Math.floor(Math.random() * animations.length)];
 
@@ -73,14 +77,23 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
     if (open && phase === "idle") {
       startRandomizer();
     }
-    if (!open) {
+  }, [open, phase, startRandomizer]);
+
+  // When modal closes, refresh the page to reflect any changes
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen) {
+      if (gamePickedRef.current) {
+        router.refresh();
+        gamePickedRef.current = false;
+      }
       setPhase("idle");
       setSelectedMember("");
     }
-  }, [open, phase, startRandomizer]);
+  };
 
   const handleAnimationEnd = () => {
-    setPhase("done");
+    setPhase("result");
   };
 
   const handleAssign = async () => {
@@ -91,12 +104,14 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
     if (result.error) {
       toast.error(result.error);
     } else {
+      gamePickedRef.current = false;
       setOpen(false);
+      router.refresh();
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button disabled={disabled}>
           <Dices className="mr-1 size-4" />
@@ -106,11 +121,7 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">
-            {phase === "done"
-              ? "The game is..."
-              : phase === "assigning"
-                ? "Who is the chosen one?"
-                : "Picking a game..."}
+            {phase === "result" ? "The game is..." : "Picking a game..."}
           </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col items-center py-6">
@@ -136,22 +147,13 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
               )}
             </>
           )}
-          {phase === "done" && (
-            <div className="space-y-5 text-center animate-in fade-in zoom-in duration-300">
-              <p className="text-3xl font-bold">{chosenGame}</p>
-              <p className="text-sm text-muted-foreground">
-                Play the game, then select the chosen one below.
+          {phase === "result" && (
+            <div className="w-full space-y-5 animate-in fade-in zoom-in duration-300">
+              <p className="text-center text-3xl font-bold">{chosenGame}</p>
+              <p className="text-center text-sm text-muted-foreground">
+                Play the game, then select the chosen one:
               </p>
-              <Button onClick={() => setPhase("assigning")}>Continue</Button>
-            </div>
-          )}
-          {phase === "assigning" && (
-            <div className="w-full space-y-4 animate-in fade-in duration-200">
-              <div className="mx-auto rounded-lg border bg-muted/50 px-4 py-2 text-center">
-                <p className="text-xs text-muted-foreground">Game</p>
-                <p className="font-semibold text-primary">{chosenGame}</p>
-              </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <Select value={selectedMember} onValueChange={setSelectedMember}>
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder="Select the chosen one" />
@@ -164,14 +166,14 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
                     ))}
                   </SelectContent>
                 </Select>
+                <Button
+                  className="w-full"
+                  onClick={handleAssign}
+                  disabled={assignPending || !selectedMember}
+                >
+                  {assignPending ? "Assigning…" : "Assign"}
+                </Button>
               </div>
-              <Button
-                className="w-full"
-                onClick={handleAssign}
-                disabled={assignPending || !selectedMember}
-              >
-                {assignPending ? "Assigning…" : "Assign"}
-              </Button>
             </div>
           )}
           {phase === "animating" && allGames.length === 0 && (
@@ -261,19 +263,23 @@ function SlotMachineAnimation({
 
   return (
     <div
-      className="relative h-12 w-64 overflow-hidden rounded-lg border bg-muted/50"
-      style={{ perspective: "300px" }}
+      className="relative w-64 overflow-hidden rounded-lg border bg-muted/50"
+      style={{ height: `${itemHeight * 5}px`, perspective: "300px" }}
     >
+      {/* Fade overlays */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-10 h-16 bg-gradient-to-b from-background to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 h-16 bg-gradient-to-t from-background to-transparent" />
       <div
         className="transition-transform duration-[6000ms] ease-[cubic-bezier(0.15,0.85,0.3,1)]"
-        style={{ transform: `translateY(-${offset}px)` }}
+        style={{ transform: `translateY(-${offset - itemHeight * 2}px)` }}
       >
         {reel.map((name, i) => (
           <div
             key={i}
-            className={`flex h-12 items-center justify-center text-lg font-bold ${
+            className={`flex items-center justify-center text-lg font-bold ${
               done && i === reel.length - 1 ? "text-primary" : ""
             }`}
+            style={{ height: `${itemHeight}px` }}
           >
             {name}
           </div>
