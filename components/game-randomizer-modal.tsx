@@ -385,7 +385,8 @@ function WheelAnimation({
   const [rotation, setRotation] = useState(0);
   const segmentAngle = 360 / games.length;
   const winnerIndex = games.indexOf(winner);
-  const targetAngle = 360 * 6 + (360 - winnerIndex * segmentAngle - segmentAngle / 2);
+  // Pointer is at top (270° in SVG coords). Rotate so winner's center aligns with it.
+  const targetAngle = 360 * 6 + 270 - winnerIndex * segmentAngle - segmentAngle / 2;
 
   useEffect(() => {
     const t = setTimeout(() => setRotation(targetAngle), 50);
