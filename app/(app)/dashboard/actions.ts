@@ -149,6 +149,18 @@ export async function deleteChore(choreId: string) {
   return { success: true };
 }
 
+export async function fetchGames() {
+  const supabase = await getSupabaseServerClient();
+  if (!supabase) return { error: "Supabase is not configured.", games: [] };
+
+  const { data: games, error } = await supabase
+    .from("games")
+    .select("name, description");
+
+  if (error || !games?.length) return { error: "No games available.", games: [] };
+  return { games };
+}
+
 export async function pickGame(choreId: string) {
   const supabase = await getSupabaseServerClient();
   if (!supabase) return { error: "Supabase is not configured." };
@@ -158,13 +170,14 @@ export async function pickGame(choreId: string) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated." };
 
-  // Pick a random game
+  // Fetch all games
   const { data: games, error: gamesError } = await supabase
     .from("games")
     .select("name");
 
   if (gamesError || !games?.length) return { error: "No games available." };
 
+  const allGameNames = games.map((g) => g.name);
   const randomGame = games[Math.floor(Math.random() * games.length)];
 
   const { error } = await supabase
@@ -179,7 +192,7 @@ export async function pickGame(choreId: string) {
   if (error) return { error: error.message };
 
   revalidatePath("/dashboard");
-  return { success: true, gameName: randomGame.name };
+  return { success: true, gameName: randomGame.name, allGameNames };
 }
 
 export async function assignChosenOne(choreId: string, userId: string) {

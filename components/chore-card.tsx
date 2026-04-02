@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Clock, Dices, Trash2, UserCheck } from "lucide-react";
+import { Clock, Trash2, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import {
   deleteChore,
-  pickGame,
   assignChosenOne,
   markDone,
   completeEarly,
 } from "@/app/(app)/dashboard/actions";
 import { EditChoreDialog } from "@/components/edit-chore-dialog";
+import { GameRandomizerModal } from "@/components/game-randomizer-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -90,14 +90,6 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
     const result = await deleteChore(chore.id);
     setPending(false);
     if (result.error) toast.error(result.error);
-  }
-
-  async function handlePickGame() {
-    setPending(true);
-    const result = await pickGame(chore.id);
-    setPending(false);
-    if (result.error) toast.error(result.error);
-    else toast.success(`Game picked: ${result.gameName}`);
   }
 
   async function handleAssignChosenOne() {
@@ -182,10 +174,7 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
       {(effectiveStatus === "pending" || effectiveStatus === "awaiting_game") && (
         <div className="flex flex-wrap gap-2">
           {effectiveStatus === "awaiting_game" && (
-            <Button size="sm" onClick={handlePickGame} disabled={pending}>
-              <Dices className="mr-1 size-4" />
-              {pending ? "Picking…" : "Pick a game"}
-            </Button>
+            <GameRandomizerModal choreId={chore.id} disabled={pending} />
           )}
           <Button
             variant="outline"
