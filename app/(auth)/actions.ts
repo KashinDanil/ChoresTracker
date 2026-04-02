@@ -5,7 +5,9 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function signUp(formData: FormData) {
   const supabase = await getSupabaseServerClient();
-  if (!supabase) throw new Error("Supabase not configured");
+  if (!supabase) {
+    return { error: "Supabase is not configured." };
+  }
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -23,12 +25,14 @@ export async function signUp(formData: FormData) {
     return { error: error.message };
   }
 
-  redirect("/dashboard");
+  redirect("/");
 }
 
 export async function signIn(formData: FormData) {
   const supabase = await getSupabaseServerClient();
-  if (!supabase) throw new Error("Supabase not configured");
+  if (!supabase) {
+    return { error: "Supabase is not configured." };
+  }
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
@@ -42,12 +46,14 @@ export async function signIn(formData: FormData) {
     return { error: error.message };
   }
 
-  redirect("/dashboard");
+  redirect("/");
 }
 
 export async function signOut() {
   const supabase = await getSupabaseServerClient();
-  if (!supabase) throw new Error("Supabase not configured");
+  if (!supabase) {
+    return { error: "Supabase is not configured." };
+  }
 
   await supabase.auth.signOut();
   redirect("/sign-in");
