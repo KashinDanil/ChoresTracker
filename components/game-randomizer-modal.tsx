@@ -21,14 +21,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type AnimationType = "ticker" | "slotMachine" | "elimination" | "wheel" | "shuffleDeck";
+type AnimationType = "ticker" | "slotMachine" | "elimination" | "wheel";
 
 const ANIMATION_NAMES: Record<AnimationType, string> = {
   ticker: "Rapid Ticker",
   slotMachine: "Slot Machine",
   elimination: "Elimination",
   wheel: "Spin the Wheel",
-  shuffleDeck: "Card Shuffle",
 };
 
 type Member = {
@@ -66,7 +65,7 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
     }
 
     gamePickedRef.current = true;
-    const animations: AnimationType[] = ["ticker", "slotMachine", "elimination", "wheel", "shuffleDeck"];
+    const animations: AnimationType[] = ["ticker", "slotMachine", "elimination", "wheel"];
     const randomAnim = animations[Math.floor(Math.random() * animations.length)];
 
     setAllGames(result.allGameNames);
@@ -144,9 +143,6 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
               )}
               {animationType === "wheel" && (
                 <WheelAnimation games={allGames} winner={chosenGame} onEnd={handleAnimationEnd} />
-              )}
-              {animationType === "shuffleDeck" && (
-                <ShuffleDeckAnimation games={allGames} winner={chosenGame} onEnd={handleAnimationEnd} />
               )}
             </>
           )}
@@ -466,69 +462,3 @@ function WheelAnimation({
   );
 }
 
-/* ─── Animation 5: Card Shuffle ─── */
-function ShuffleDeckAnimation({
-  games,
-  winner,
-  onEnd,
-}: {
-  games: string[];
-  winner: string;
-  onEnd: () => void;
-}) {
-  const [phase, setPhase] = useState<"scatter" | "gather" | "reveal">("scatter");
-  const [revealed, setRevealed] = useState(false);
-
-  useEffect(() => {
-    const t1 = setTimeout(() => setPhase("gather"), 1800);
-    const t2 = setTimeout(() => {
-      setPhase("reveal");
-      setRevealed(true);
-    }, 3500);
-    const t3 = setTimeout(onEnd, 5500);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
-  }, [onEnd]);
-
-  const offsets = games.map((_, i) => ({
-    x: (i - Math.floor(games.length / 2)) * 30 + (Math.random() - 0.5) * 20,
-    y: (Math.random() - 0.5) * 40,
-    rotate: (Math.random() - 0.5) * 30,
-  }));
-
-  return (
-    <div className="relative h-40 w-64 flex items-center justify-center">
-      {games.map((game, i) => {
-        const isWinner = game === winner;
-        const scattered = phase === "scatter";
-        const reveal = phase === "reveal" && isWinner;
-
-        return (
-          <div
-            key={game}
-            className={`absolute rounded-lg border px-4 py-3 text-center text-sm font-medium shadow-sm transition-all duration-700 ${
-              reveal
-                ? "bg-primary text-primary-foreground scale-110 z-20"
-                : phase === "reveal" && !isWinner
-                  ? "opacity-0 scale-75"
-                  : "bg-background"
-            }`}
-            style={{
-              transform: scattered
-                ? `translate(${offsets[i].x}px, ${offsets[i].y}px) rotate(${offsets[i].rotate}deg)`
-                : phase === "gather"
-                  ? `translate(0, 0) rotate(${i * 2 - games.length}deg)`
-                  : undefined,
-              zIndex: isWinner ? 20 : games.length - i,
-            }}
-          >
-            {revealed && isWinner ? game : scattered ? game : "?"}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
