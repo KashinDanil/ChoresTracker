@@ -128,7 +128,7 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <Badge variant="outline" className={`px-3 py-1 text-sm font-semibold ${statusColors[effectiveStatus]}`}>
+          <Badge variant="outline" className={`px-3 py-1 text-xs font-semibold ${statusColors[effectiveStatus]}`}>
             {statusLabels[effectiveStatus]}
           </Badge>
           {isCreator && !isDone && (
@@ -178,11 +178,10 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
           )}
           <Button
             variant="outline"
-            size="sm"
             onClick={handleCompleteEarly}
             disabled={pending}
           >
-            <UserCheck className="mr-1 size-3" />
+            <UserCheck className="mr-1 size-4" />
             Complete now
           </Button>
           {isCreator && <EditChoreDialog chore={chore} />}
@@ -211,7 +210,6 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
               </SelectContent>
             </Select>
             <Button
-              size="sm"
               onClick={handleAssignChosenOne}
               disabled={pending || !selectedMember}
             >
@@ -222,7 +220,7 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
       )}
 
       {effectiveStatus === "assigned" && isAssignee && (
-        <Button size="sm" onClick={handleMarkDone} disabled={pending}>
+        <Button onClick={handleMarkDone} disabled={pending}>
           {pending ? "Completing…" : "Mark as done"}
         </Button>
       )}

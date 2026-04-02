@@ -70,7 +70,7 @@ export function GameRandomizerModal({ choreId, disabled }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" disabled={disabled}>
+        <Button disabled={disabled}>
           <Dices className="mr-1 size-4" />
           Pick a game
         </Button>
