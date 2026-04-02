@@ -82,7 +82,7 @@ export default function OnboardingPage() {
                 />
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="mt-4">
               <Button type="submit" className="w-full" disabled={createPending}>
                 {createPending ? "Creating…" : "Create household"}
               </Button>
@@ -104,7 +104,7 @@ export default function OnboardingPage() {
                 />
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="mt-4">
               <Button type="submit" className="w-full" disabled={joinPending}>
                 {joinPending ? "Joining…" : "Join household"}
               </Button>
