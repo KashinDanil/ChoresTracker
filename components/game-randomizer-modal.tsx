@@ -94,8 +94,7 @@ export function GameRandomizerModal({ choreId, members, disabled }: Props) {
   };
 
   const handleAnimationEnd = () => {
-    // Brief pause so the user can see the final animation state before the result appears
-    setTimeout(() => setPhase("result"), 500);
+    setTimeout(() => setPhase("result"), 250);
   };
 
   const handleAssign = async () => {
