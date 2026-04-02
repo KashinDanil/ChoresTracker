@@ -196,7 +196,7 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
           <p className="text-sm text-muted-foreground">
             Play the game, then select the chosen one:
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Select value={selectedMember} onValueChange={setSelectedMember}>
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="Select the chosen one" />
@@ -215,14 +215,20 @@ export function ChoreCard({ chore, effectiveStatus, members, currentUserId }: Pr
             >
               {pending ? "Assigning…" : "Assign"}
             </Button>
+            {isCreator && <EditChoreDialog chore={chore} />}
           </div>
         </div>
       )}
 
-      {effectiveStatus === "assigned" && isAssignee && (
-        <Button onClick={handleMarkDone} disabled={pending}>
-          {pending ? "Completing…" : "Mark as done"}
-        </Button>
+      {effectiveStatus === "assigned" && (
+        <div className="flex flex-wrap gap-2">
+          {isAssignee && (
+            <Button onClick={handleMarkDone} disabled={pending}>
+              {pending ? "Completing…" : "Mark as done"}
+            </Button>
+          )}
+          {isCreator && <EditChoreDialog chore={chore} />}
+        </div>
       )}
 
       {isDone && (

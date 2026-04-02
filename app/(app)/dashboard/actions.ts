@@ -120,7 +120,7 @@ export async function updateChore(formData: FormData) {
         | null,
     })
     .eq("id", choreId)
-    .eq("status", "pending");
+    .neq("status", "done");
 
   if (error) return { error: error.message };
 
